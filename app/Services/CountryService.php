@@ -18,16 +18,12 @@ class CountryService
     {
         $this->countriesApi = env('COUNTRIES_API_URL', 'https://restcountries.com/v2/all?fields=name,capital,region,population,flag,currencies');
         $this->exchangeApi = env('EXCHANGE_API_URL', 'https://open.er-api.com/v6/latest/USD');
-
     }
 
     public function refreshCountries()
     {
         try {
-
-            Log::info('Fetching countries data', ['url' => $this->countriesApi]);
-
-            $countriesResponse = Http::timeout(50)->get($this->countriesApi);
+            $countriesResponse = Http::timeout(10)->get($this->countriesApi);
             if (!$countriesResponse->ok()) {
                 return [
                     'error' => 'External data source unavailable',
@@ -36,7 +32,7 @@ class CountryService
             }
             $countriesData = $countriesResponse->json();
 
-            $exchangeResponse = Http::timeout(50)->get($this->exchangeApi);
+            $exchangeResponse = Http::timeout(10)->get($this->exchangeApi);
             if (!$exchangeResponse->ok()) {
                 return [
                     'error' => 'External data source unavailable',
@@ -125,7 +121,7 @@ class CountryService
         }
     }
 
-    protected function generateSummaryImage($lastRefreshedAt)
+protected function generateSummaryImage($lastRefreshedAt)
     {
         try {
             $totalCountries = Country::count();
@@ -180,15 +176,8 @@ class CountryService
 
             imagedestroy($img);
         } catch (\Exception $e) {
-            // Log::error('Image generation failed: ' . $e->getMessage());
-            // throw new \Exception('Internal server error');
-
-             Log::error('Country refresh exception', [
-        'message' => $e->getMessage(),
-        'trace' => $e->getTraceAsString(),
-            ]);
-    return ['error' => 'Internal server error', 'details' => $e->getMessage()];
-
+            Log::error('Image generation failed: ' . $e->getMessage());
+            throw new \Exception('Internal server error');
         }
     }
 }

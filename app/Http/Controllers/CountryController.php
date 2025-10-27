@@ -82,7 +82,7 @@ return response()->json([
 
         $countries = $query->get();
         if ($countries->isEmpty()) {
-            return response()->json(['error' => 'Country Not Found'], 404);
+            return response()->json(['error' => 'Country List Not Found'], 404);
         }
 
         return response()->json($countries);
@@ -92,7 +92,7 @@ return response()->json([
     {
         $country = Country::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
         if (!$country) {
-            return response()->json(['error' => 'Could not fetch Countries List'], 404); 
+            return response()->json(['error' => 'Could not fetch Country Data'], 404); 
         }
         return response()->json($country);
     }
@@ -116,7 +116,7 @@ return response()->json([
         $totalCountries = Country::count();
         $lastRefreshedAt = Country::max('last_refreshed_at');
         if ($totalCountries === 0 || $lastRefreshedAt === null) {
-            return response()->json(['error' => 'No countries in the database'], 404);
+            return response()->json(['error' => 'No country in the database'], 404);
         } else {
             return response()->json([
             'total_countries' => $totalCountries,
