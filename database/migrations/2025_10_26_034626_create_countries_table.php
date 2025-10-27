@@ -9,7 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+   public function up(): void
     {
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('capital')->nullable();
             $table->string('region')->nullable();
             $table->bigInteger('population');
-            $table->string('currency_code');
+            $table->string('currency_code')->nullable();
             $table->decimal('exchange_rate', 15, 4)->nullable();
             $table->decimal('estimated_gdp', 20, 2)->nullable();
             $table->string('flag_url')->nullable();
@@ -25,7 +25,6 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */
