@@ -18,8 +18,6 @@ class CountryController extends Controller
 
     public function refresh()
     {
-     
-
 $result = $this->countryService->refreshCountries();
 
 // Log the result for visibility

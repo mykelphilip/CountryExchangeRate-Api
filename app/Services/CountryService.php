@@ -24,6 +24,9 @@ class CountryService
     public function refreshCountries()
     {
         try {
+
+            Log::info('Fetching countries data', ['url' => $this->countriesApi]);
+
             $countriesResponse = Http::timeout(50)->get($this->countriesApi);
             if (!$countriesResponse->ok()) {
                 return [
@@ -177,8 +180,15 @@ class CountryService
 
             imagedestroy($img);
         } catch (\Exception $e) {
-            Log::error('Image generation failed: ' . $e->getMessage());
-            throw new \Exception('Internal server error');
+            // Log::error('Image generation failed: ' . $e->getMessage());
+            // throw new \Exception('Internal server error');
+
+             Log::error('Country refresh exception', [
+        'message' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+            ]);
+    return ['error' => 'Internal server error', 'details' => $e->getMessage()];
+
         }
     }
 }
