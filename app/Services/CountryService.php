@@ -137,10 +137,18 @@ public function refreshCountries()
 
 } catch (\Exception $e) {
     DB::rollBack();
-    Log::critical('Countries refresh failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+    // Log full error for Railway
+    Log::error('Country refresh failed', [
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+
     return [
         'error' => 'Internal server error',
-        'details' => $e->getMessage()
+        'details' => $e->getMessage() // temporarily reveal real reason
     ];
 }
 
