@@ -20,6 +20,10 @@ class CountryController extends Controller
     {
 $result = $this->countryService->refreshCountries();
 
+if (!$result) {
+    Log::error('Country refresh failed: No result returned from service');
+    return response()->json(['error' => 'Country Not Found'], 404);
+}
 // Log the result for visibility
 Log::info('Country refresh triggered', ['result' => $result]);
 
@@ -50,11 +54,14 @@ return response()->json([
     'last_refreshed_at' => $result['last_refreshed_at'],
 ]);
 
-    }
+}
 
     public function index(Request $request)
     {
         $query = Country::query();
+        if (!$query) {
+            return response()->json(['error' => 'Database query failed'], 400);
+        }
 
         if ($request->has('region')) {
             $query->where('region', $request->region);
@@ -65,7 +72,7 @@ return response()->json([
         if ($request->has('sort')) {
             $sortField = 'estimated_gdp';
             $sortDirection = 'desc';
-            if (in_array($request->sort, ['gdp_desc', 'gdp_asc', 'name_desc', 'name_asc', 'population_desc', 'population_asc'])) {
+            if (in_array($request->sort, ['gdp_desc', 'name_desc', 'name_asc', 'population_desc', 'population_asc'])) {
                 $parts = explode('_', $request->sort);
                 $sortField = str_replace(['gdp', 'name', 'population'], ['estimated_gdp', 'name', 'population'], $parts[0]);
                 $sortDirection = $parts[1];
@@ -74,6 +81,10 @@ return response()->json([
         }
 
         $countries = $query->get();
+        if ($countries->isEmpty()) {
+            return response()->json(['error' => 'Country Not Found'], 404);
+        }
+
         return response()->json($countries);
     }
 
@@ -81,7 +92,7 @@ return response()->json([
     {
         $country = Country::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
         if (!$country) {
-            return response()->json(['error' => 'Country not found'], 404);
+            return response()->json(['error' => 'Could not fetch Countries List'], 404); 
         }
         return response()->json($country);
     }
@@ -89,21 +100,29 @@ return response()->json([
     public function destroy(string $name)
     {
         $country = Country::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
+
         if (!$country) {
-            return response()->json(['error' => 'Country not found'], 404);
-        }
-        $country->delete();
+            return response()->json(['error' => 'Could not fetch Countries List to Delete'], 404);
+        } else {
+            Log::info('Deleting country', ['name' => $name]);
+            $country->delete();
         return response()->json(['message' => 'Country deleted successfully']);
+        }
+        
     }
 
     public function status()
     {
         $totalCountries = Country::count();
         $lastRefreshedAt = Country::max('last_refreshed_at');
-        return response()->json([
+        if ($totalCountries === 0 || $lastRefreshedAt === null) {
+            return response()->json(['error' => 'No countries in the database'], 404);
+        } else {
+            return response()->json([
             'total_countries' => $totalCountries,
             'last_refreshed_at' => $lastRefreshedAt,
         ]);
+        }
     }
 
     public function image()
