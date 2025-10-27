@@ -24,7 +24,7 @@ public function refreshCountries()
     {
         
         try {
-    $countriesResponse = Http::timeout(10)->get($this->countriesApi);
+    $countriesResponse = Http::timeout(50)->get($this->countriesApi);
     if (!$countriesResponse->ok()) {
         Log::error('Countries API failed', [
             'status' => $countriesResponse->status(),
@@ -38,7 +38,7 @@ public function refreshCountries()
 
     $countriesData = $countriesResponse->json();
 
-    $exchangeResponse = Http::timeout(10)->get($this->exchangeApi);
+    $exchangeResponse = Http::timeout(50)->get($this->exchangeApi);
     if (!$exchangeResponse->ok()) {
         Log::error('Exchange API failed', [
             'status' => $exchangeResponse->status(),
@@ -187,8 +187,8 @@ protected function generateSummaryImage($lastRefreshedAt)
 
             imagettftext($img, 14, 0, 20, 350, $black, $fontPath, "Last refreshed at: " . $lastRefreshedAt->toDateTimeString());
 
-            if (!Storage::exists('cache')) {
-                Storage::makeDirectory('cache');
+            if (!Storage::exists('app/cache/cache')) {
+                Storage::makeDirectory('app/cache/cache');
             }
 
             $imagePath = storage_path('app/cache/summary.png');
